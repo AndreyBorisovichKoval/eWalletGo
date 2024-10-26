@@ -5,17 +5,17 @@ package service
 import (
 	"eWalletGo_TestTask/errs"
 	"eWalletGo_TestTask/pkg/repository"
-	"fmt"
+	"errors"
 )
 
 // CheckWalletExistence проверяет наличие кошелька по ID и возвращает результат...
-func CheckWalletExistence(walletID string) error {
+func CheckWalletExistence(walletID string) (bool, error) {
 	exists, err := repository.CheckWalletExists(walletID)
 	if err != nil {
-		return fmt.Errorf("error checking wallet existence: %w", err)
+		if errors.Is(err, errs.ErrRecordNotFound) {
+			return false, errs.ErrWalletNotFound // Преобразуем общую ошибку в специфичную для кошелька
+		}
+		return false, errs.ErrSomethingWentWrong
 	}
-	if !exists {
-		return errs.ErrWalletNotFound // кастомная ошибка, если кошелек не найден...
-	}
-	return nil
+	return exists, nil
 }
