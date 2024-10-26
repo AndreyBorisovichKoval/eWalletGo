@@ -12,7 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CheckWalletExistence проверяет существование кошелька и возвращает ответ клиенту...
+// CheckWalletExistence проверяет существование кошелька
+// @Summary Check wallet existence
+// @Tags wallets
+// @Description Checks if the wallet exists based on wallet ID
+// @ID check-wallet-existence
+// @Param wallet_id path string true "Wallet ID"
+// @Success 200 {object} map[string]interface{} "wallet found"
+// @Failure 404 {object} ErrorResponse "Wallet not found"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /wallet/{wallet_id}/exists [get]
 func CheckWalletExistence(c *gin.Context) {
 	walletID := c.Param("wallet_id")
 	exists, err := service.CheckWalletExistence(walletID)
@@ -30,7 +39,19 @@ func CheckWalletExistence(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "wallet found"})
 }
 
-// GetMonthlyRechargeSummary возвращает количество и сумму пополнений за указанный месяц по `walletID`
+// GetMonthlyRechargeSummary возвращает сумму и количество пополнений за указанный месяц
+// @Summary Get monthly recharge summary
+// @Tags wallets
+// @Description Retrieves the total amount and count of recharge operations for a wallet in a specified month
+// @ID get-monthly-recharge-summary
+// @Param wallet_id query string true "Wallet ID"
+// @Param year query int true "Year"
+// @Param month query int true "Month"
+// @Success 200 {object} map[string]interface{} "Recharge summary retrieved"
+// @Failure 400 {object} ErrorResponse "Invalid input"
+// @Failure 404 {object} ErrorResponse "Wallet not found"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /wallet/monthly-summary [get]
 func GetMonthlyRechargeSummary(c *gin.Context) {
 	yearStr := c.Query("year")
 	monthStr := c.Query("month")
@@ -61,6 +82,15 @@ func GetMonthlyRechargeSummary(c *gin.Context) {
 }
 
 // GetWalletBalance возвращает баланс кошелька
+// @Summary Get wallet balance
+// @Tags wallets
+// @Description Retrieves the current balance of a specified wallet
+// @ID get-wallet-balance
+// @Param wallet_id path string true "Wallet ID"
+// @Success 200 {object} map[string]interface{} "Wallet balance retrieved"
+// @Failure 404 {object} ErrorResponse "Wallet not found"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /wallet/{wallet_id}/balance [get]
 func GetWalletBalance(c *gin.Context) {
 	walletID := c.Param("wallet_id")
 	balance, err := service.GetWalletBalance(walletID)
@@ -73,7 +103,16 @@ func GetWalletBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"balance": balance})
 }
 
-// RecalculateWalletBalance пересчитывает баланс кошелька на основе транзакций...
+// RecalculateWalletBalance пересчитывает баланс кошелька на основе транзакций
+// @Summary Recalculate wallet balance
+// @Tags wallets
+// @Description Recalculates the wallet balance based on transaction records
+// @ID recalculate-wallet-balance
+// @Param wallet_id path string true "Wallet ID"
+// @Success 200 {object} map[string]interface{} "Wallet balance recalculated"
+// @Failure 404 {object} ErrorResponse "Wallet not found"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /wallet/{wallet_id}/recalculate-balance [patch]
 func RecalculateWalletBalance(c *gin.Context) {
 	walletID := c.Param("wallet_id")
 	newBalance, err := service.RecalculateWalletBalance(walletID)
@@ -86,7 +125,20 @@ func RecalculateWalletBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"wallet_id": walletID, "new_balance": newBalance})
 }
 
-// RechargeWallet пополняет кошелек и возвращает ответ клиенту...
+// RechargeWallet пополняет кошелек
+// @Summary Recharge wallet
+// @Tags wallets
+// @Description Adds a specified amount to the wallet balance
+// @ID recharge-wallet
+// @Accept json
+// @Produce json
+// @Param wallet_id body string true "Wallet ID"
+// @Param amount body float64 true "Amount to recharge"
+// @Success 200 {object} map[string]interface{} "Wallet recharged successfully"
+// @Failure 400 {object} ErrorResponse "Invalid input"
+// @Failure 404 {object} ErrorResponse "Wallet not found"
+// @Failure 500 {object} ErrorResponse "Server error"
+// @Router /wallet/recharge [post]
 func RechargeWallet(c *gin.Context) {
 	var req struct {
 		WalletID string  `json:"wallet_id"`
