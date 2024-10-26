@@ -16,7 +16,7 @@ func InsertTestData(c *gin.Context) {
 	if err != nil {
 		// Проверяем, если ошибка указывает на уже существующие данные
 		if err.Error() == "тестовые данные уже добавлены" {
-			c.JSON(http.StatusConflict, gin.H{"error": "Ранее Тестовые Данные уже Были добавлены"})
+			c.JSON(http.StatusConflict, gin.H{"error": "Тестовые Данные ранее уже Были добавлены"})
 			return
 		}
 		// Логируем и отправляем общее сообщение об ошибке

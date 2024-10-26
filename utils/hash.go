@@ -18,12 +18,6 @@ func GenerateHash(input string) string {
 	return hex.EncodeToString(hashedBytes) // Конвертируем байты в строку в формате hex.
 }
 
-// // CheckPasswordHash сравнивает хешированный пароль с введённым пользователем паролем...
-// func CheckPasswordHash(password, hash string) bool {
-// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-// 	return err == nil
-// }
-
 // CheckPasswordHash сравнивает хешированный пароль с введённым пользователем паролем...
 func CheckPasswordHash(password, hash string) bool {
 	return GenerateHash(password) == hash

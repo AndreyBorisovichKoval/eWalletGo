@@ -1,12 +1,12 @@
-// Файл: C:\GoProject\src\eWalletGo_TestTask\pkg\controllers\routes.go
+// C:\GoProject\src\eWalletGo_TestTask\pkg\controllers\routes.go
 
 package controllers
 
 import (
 	"eWalletGo_TestTask/configs"
-	_ "eWalletGo_TestTask/docs"
 	"eWalletGo_TestTask/logger"
 
+	_ "eWalletGo_TestTask/docs"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,16 +35,16 @@ func InitRoutes() *gin.Engine {
 	// Маршрут для проверки состояния сервера
 	router.GET("/ping", PingPong)
 
-	// // Группа маршрутов для управления кошельком
-	// // walletG := router.Group("/wallet", middleware.AuthMiddleware)
-	// walletG := router.Group("/wallet")
-	// {
-	// 	walletG.GET("/check/:wallet_id", CheckWalletExistence) // Проверка существования кошелька...
-	// 	// walletG.POST("/recharge", RechargeWallet)                                  // Пополнение кошелька...
-	// 	// walletG.GET("/monthly-summary", GetMonthlyRechargeSummary)                 // Суммарные данные пополнений за текущий месяц, либо за указанный период (нужны/необходимы qwery-параметры года и месяца)...
-	// 	// walletG.GET("/balance/:wallet_id", GetWalletBalance)                       // Получение текущего баланса кошелька...
-	// 	// walletG.PATCH("/recalculate-balance/:wallet_id", RecalculateWalletBalance) // Перерасчёт баланса на основе транзакций...
-	// }
+	// Группа маршрутов для управления кошельком
+	// walletG := router.Group("/wallet", middleware.AuthMiddleware)
+	walletG := router.Group("/wallet")
+	{
+		walletG.GET("/check/:wallet_id", CheckWalletExistence) // Проверка существования кошелька...
+		// walletG.POST("/recharge", RechargeWallet)                                  // Пополнение кошелька...
+		// walletG.GET("/monthly-summary", GetMonthlyRechargeSummary)                 // Суммарные данные пополнений за текущий месяц, либо за указанный период (нужны/необходимы qwery-параметры года и месяца)...
+		// walletG.GET("/balance/:wallet_id", GetWalletBalance)                       // Получение текущего баланса кошелька...
+		// walletG.PATCH("/recalculate-balance/:wallet_id", RecalculateWalletBalance) // Перерасчёт баланса на основе транзакций...
+	}
 
 	// Маршрут для вставки тестовых данных
 	router.POST("/insert-test-data", InsertTestData)
