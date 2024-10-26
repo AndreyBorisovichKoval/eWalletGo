@@ -75,3 +75,13 @@ func RechargeWallet(walletID string, amount float64) error {
 	logger.Info.Printf("[service.RechargeWallet] Пополнение кошелька успешно завершено: %s, Сумма: %.2f", walletID, amount)
 	return nil
 }
+
+// GetMonthlyRechargeSummary возвращает суммарные данные по кошельку для указанного месяца и года
+func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, float64, error) {
+	totalCount, totalAmount, err := repository.GetMonthlyRechargeSummary(walletID, year, month)
+	if err != nil {
+		logger.Error.Printf("[service.GetMonthlyRechargeSummary] Ошибка получения данных: %v", err)
+		return 0, 0, err
+	}
+	return totalCount, totalAmount, nil
+}

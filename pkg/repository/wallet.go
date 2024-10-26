@@ -114,3 +114,57 @@ func GetAccountIDByWalletIDTx(walletID string, tx *gorm.DB) (uint, error) {
 	}
 	return account.ID, nil
 }
+
+// // GetMonthlyRechargeSummary возвращает суммарные данные по `walletID` для указанного месяца и года
+// func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, float64, error) {
+// 	var totalCount int64
+// 	var totalAmount float64
+
+// 	err := db.GetDBConn().
+// 		Model(&models.Transaction{}).
+// 		Joins("JOIN accounts ON transactions.account_id = accounts.id").
+// 		Joins("JOIN wallets ON accounts.wallet_id = wallets.id").
+// 		Where("wallets.wallet_number = ? AND EXTRACT(YEAR FROM transactions.created_at) = ? AND EXTRACT(MONTH FROM transactions.created_at) = ? AND transactions.type = ?", walletID, year, month, "recharge").
+// 		Count(&totalCount).
+// 		Select("COALESCE(SUM(transactions.amount), 0)").Row().Scan(&totalAmount)
+
+// 	if err != nil {
+// 		logger.Error.Printf("[repository.GetMonthlyRechargeSummary] Ошибка получения данных: %v", err)
+// 		return 0, 0, errs.ErrSomethingWentWrong
+// 	}
+
+// 	return totalCount, totalAmount, nil
+// }
+
+// GetMonthlyRechargeSummary возвращает суммарные данные по `walletID` для указанного месяца и года
+func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, float64, error) {
+	// Проверяем существование кошелька
+	var walletCount int64
+	err := db.GetDBConn().
+		Model(&models.Wallet{}).
+		Where("wallet_number = ?", walletID).
+		Count(&walletCount).Error
+	if err != nil || walletCount == 0 {
+		logger.Warning.Printf("[repository.GetMonthlyRechargeSummary] Wallet not found for wallet number: %s", walletID)
+		return 0, 0, errs.ErrWalletNotFound
+	}
+
+	var totalCount int64
+	var totalAmount float64
+
+	// Запрос для суммирования пополнений за указанный месяц и год
+	err = db.GetDBConn().
+		Model(&models.Transaction{}).
+		Joins("JOIN accounts ON transactions.account_id = accounts.id").
+		Joins("JOIN wallets ON accounts.wallet_id = wallets.id").
+		Where("wallets.wallet_number = ? AND EXTRACT(YEAR FROM transactions.created_at) = ? AND EXTRACT(MONTH FROM transactions.created_at) = ? AND transactions.type = ?", walletID, year, month, "recharge").
+		Count(&totalCount).
+		Select("COALESCE(SUM(transactions.amount), 0)").Row().Scan(&totalAmount)
+
+	if err != nil {
+		logger.Error.Printf("[repository.GetMonthlyRechargeSummary] Ошибка получения данных: %v", err)
+		return 0, 0, errs.ErrSomethingWentWrong
+	}
+
+	return totalCount, totalAmount, nil
+}

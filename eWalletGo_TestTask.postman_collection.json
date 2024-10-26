@@ -121,6 +121,52 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "GetQuantityAndAmount",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57320/wallet/monthly-summary?wallet_id=1234567890123456&year=2024&month=10",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57320",
+							"path": [
+								"wallet",
+								"monthly-summary"
+							],
+							"query": [
+								{
+									"key": "wallet_id",
+									"value": "1234567890123456"
+								},
+								{
+									"key": "year",
+									"value": "2024"
+								},
+								{
+									"key": "month",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
