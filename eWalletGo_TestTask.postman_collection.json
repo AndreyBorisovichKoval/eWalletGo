@@ -46,6 +46,30 @@
 			]
 		},
 		{
+			"name": "TestData",
+			"item": [
+				{
+					"name": "InsetTestDataToDatabase",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:57320/insert-test-data",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57320",
+							"path": [
+								"insert-test-data"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Wallets",
 			"item": [
 				{
@@ -68,26 +92,31 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "TestData",
-			"item": [
+				},
 				{
-					"name": "InsetTestDataToDatabase",
+					"name": "RechargeWallet",
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"wallet_id\": \"1234567890123456\",\r\n    \"amount\": 500\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:57320/insert-test-data",
+							"raw": "http://localhost:57320/wallet/recharge",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "57320",
 							"path": [
-								"insert-test-data"
+								"wallet",
+								"recharge"
 							]
 						}
 					},
