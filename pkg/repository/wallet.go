@@ -26,84 +26,6 @@ func CheckWalletExists(walletID string) (bool, error) {
 	return count > 0, nil
 }
 
-// // UpdateWalletBalance обновляет баланс счета по WalletID...
-// func UpdateWalletBalance(walletID string, amount float64) error {
-// 	var account models.Account
-
-// 	// Сначала находим счет, связанный с данным WalletID
-// 	if err := db.GetDBConn().Table("accounts").
-// 		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
-// 		Where("wallets.wallet_number = ?", walletID).
-// 		Select("accounts.id").
-// 		First(&account).Error; err != nil {
-// 		logger.Error.Printf("[repository.UpdateWalletBalance] Error finding account for wallet ID %s: %v", walletID, err)
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return errs.ErrWalletNotFound
-// 		}
-// 		return errs.ErrSomethingWentWrong
-// 	}
-
-// 	// Теперь обновляем баланс счета
-// 	result := db.GetDBConn().Model(&models.Account{}).
-// 		Where("id = ?", account.ID).
-// 		Update("balance", gorm.Expr("balance + ?", amount))
-
-// 	if result.Error != nil {
-// 		logger.Error.Printf("[repository.UpdateWalletBalance] Error updating account balance for wallet ID %s: %v", walletID, result.Error)
-// 		return errs.ErrSomethingWentWrong
-// 	}
-
-// 	// Проверка, что обновление затронуло строки
-// 	if result.RowsAffected == 0 {
-// 		logger.Warning.Printf("[repository.UpdateWalletBalance] No rows affected, possibly account not found for wallet ID: %s", walletID)
-// 		return errs.ErrWalletNotFound
-// 	}
-
-// 	logger.Info.Printf("[repository.UpdateWalletBalance] Account balance updated successfully for wallet ID: %s", walletID)
-// 	return nil
-// }
-
-// // CreateTransaction создает запись транзакции для счета (account)...
-// func CreateTransaction(accountID uint, amount float64, transactionType string) error {
-// 	transaction := models.Transaction{
-// 		AccountID: accountID,
-// 		Amount:    amount,
-// 		Type:      transactionType,
-// 	}
-// 	if err := db.GetDBConn().Create(&transaction).Error; err != nil {
-// 		logger.Error.Printf("[repository.CreateTransaction] Error recording transaction: %v", err)
-// 		return errs.ErrSomethingWentWrong
-// 	}
-// 	return nil
-// }
-
-// // Получает ID счета, связанный с `wallet_number` через `wallet_id`
-// func GetAccountIDByWalletID(walletNumber string) (uint, error) {
-// 	var wallet models.Wallet
-// 	err := db.GetDBConn().Select("id").Where("wallet_number = ?", walletNumber).First(&wallet).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			logger.Warning.Printf("[repository.GetAccountIDByWalletID] Wallet not found for wallet number: %s", walletNumber)
-// 			return 0, errs.ErrWalletNotFound
-// 		}
-// 		logger.Error.Printf("[repository.GetAccountIDByWalletID] Error retrieving wallet ID for wallet number %s: %v", walletNumber, err)
-// 		return 0, errs.ErrSomethingWentWrong
-// 	}
-
-// 	// Теперь используем `wallet.ID` для поиска `account` в таблице `accounts`
-// 	var account models.Account
-// 	err = db.GetDBConn().Select("id").Where("wallet_id = ?", wallet.ID).First(&account).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			logger.Warning.Printf("[repository.GetAccountIDByWalletID] Account not found for wallet ID: %d", wallet.ID)
-// 			return 0, errs.ErrRecordNotFound
-// 		}
-// 		logger.Error.Printf("[repository.GetAccountIDByWalletID] Error retrieving account ID for wallet ID %d: %v", wallet.ID, err)
-// 		return 0, errs.ErrSomethingWentWrong
-// 	}
-// 	return account.ID, nil
-// }
-
 // CheckWalletExistsTx проверяет, существует ли кошелек с данным ID в рамках транзакции...
 func CheckWalletExistsTx(walletID string, tx *gorm.DB) (bool, error) {
 	var count int64
@@ -117,18 +39,6 @@ func CheckWalletExistsTx(walletID string, tx *gorm.DB) (bool, error) {
 	}
 	return count > 0, nil
 }
-
-// // UpdateWalletBalanceTx обновляет баланс кошелька в рамках транзакции...
-// func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
-// 	err := tx.Model(&models.Account{}).
-// 		Where("wallet_id = ?", walletID).
-// 		Update("balance", gorm.Expr("balance + ?", amount)).Error
-// 	if err != nil {
-// 		logger.Error.Printf("[repository.UpdateWalletBalanceTx] Error updating wallet balance: %v", err)
-// 		return errs.ErrSomethingWentWrong
-// 	}
-// 	return nil
-// }
 
 // UpdateWalletBalanceTx обновляет баланс кошелька в рамках транзакции...
 func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
