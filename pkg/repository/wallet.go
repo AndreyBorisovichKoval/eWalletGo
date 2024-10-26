@@ -147,3 +147,25 @@ func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, flo
 
 	return totalCount, totalAmount, nil
 }
+
+// GetWalletBalance возвращает текущий баланс кошелька по его ID...
+func GetWalletBalance(walletID string) (float64, error) {
+	var account models.Account
+	err := db.GetDBConn().Table("accounts").
+		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
+		Where("wallets.wallet_number = ?", walletID).
+		Select("accounts.balance").
+		First(&account).Error
+
+	// Применяем translateError для конвертации ошибки
+	if err != nil {
+		err = translateError(err)
+		if errors.Is(err, errs.ErrRecordNotFound) {
+			logger.Warning.Printf("[repository.GetWalletBalance] Wallet not found for wallet ID: %s", walletID)
+			return 0, errs.ErrWalletNotFound
+		}
+		logger.Error.Printf("[repository.GetWalletBalance] Error retrieving balance for wallet ID %s: %v", walletID, err)
+		return 0, errs.ErrSomethingWentWrong
+	}
+	return account.Balance, nil
+}

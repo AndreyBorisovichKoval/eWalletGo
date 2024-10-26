@@ -167,6 +167,39 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "GetBalance",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57320/wallet/balance/1234567890123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57320",
+							"path": [
+								"wallet",
+								"balance",
+								"1234567890123456"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

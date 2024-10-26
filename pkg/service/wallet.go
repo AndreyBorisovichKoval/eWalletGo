@@ -85,3 +85,17 @@ func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, flo
 	}
 	return totalCount, totalAmount, nil
 }
+
+// GetWalletBalance возвращает текущий баланс кошелька...
+func GetWalletBalance(walletID string) (float64, error) {
+	balance, err := repository.GetWalletBalance(walletID)
+	if err != nil {
+		if err == errs.ErrWalletNotFound {
+			logger.Warning.Printf("[service.GetWalletBalance] Wallet not found: %s", walletID)
+			return 0, errs.ErrWalletNotFound
+		}
+		logger.Error.Printf("[service.GetWalletBalance] Error retrieving wallet balance for wallet ID %s: %v", walletID, err)
+		return 0, errs.ErrSomethingWentWrong
+	}
+	return balance, nil
+}

@@ -81,3 +81,16 @@ func GetMonthlyRechargeSummary(c *gin.Context) {
 		"total_amount": totalAmount,
 	})
 }
+
+// GetWalletBalance возвращает баланс кошелька
+func GetWalletBalance(c *gin.Context) {
+	walletID := c.Param("wallet_id")
+	balance, err := service.GetWalletBalance(walletID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	logger.Info.Printf("[controllers.GetWalletBalance] Balance retrieved for wallet: %s", walletID)
+	c.JSON(http.StatusOK, gin.H{"balance": balance})
+}
