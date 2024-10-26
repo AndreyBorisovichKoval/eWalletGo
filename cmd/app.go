@@ -7,9 +7,11 @@ import (
 	"eWalletGo_TestTask/configs"
 	"eWalletGo_TestTask/db"
 	"eWalletGo_TestTask/logger"
+	"eWalletGo_TestTask/pkg/controllers"
 	"eWalletGo_TestTask/server"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -72,13 +74,13 @@ func RunApp() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	// // Запуск сервера в отдельной горутине...
-	// go func() {
-	// 	defer wg.Done()
-	// 	if err := mainServer.Run(configs.AppSettings.AppParams.PortRun, controllers.InitRoutes()); err != nil && err != http.ErrServerClosed {
-	// 		log.Fatalf("HTTP server failed to start: %v", err)
-	// 	}
-	// }()
+	// Запуск сервера в отдельной горутине...
+	go func() {
+		defer wg.Done()
+		if err := mainServer.Run(configs.AppSettings.AppParams.PortRun, controllers.InitRoutes()); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("HTTP server failed to start: %v", err)
+		}
+	}()
 
 	// Ожидание сигнала завершения работы...
 	quit := make(chan os.Signal, 1)
