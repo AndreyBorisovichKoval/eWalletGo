@@ -1,0 +1,9 @@
+# C:\GoProject\src\eShop\.gitignore
+
+.env
+.idea
+.vscode
+logs
+*.log
+configs/configs.json
+temp/
