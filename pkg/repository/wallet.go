@@ -232,20 +232,6 @@ func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
 	return nil
 }
 
-// // CreateTransactionTx создает запись транзакции для счета (account) в рамках транзакции...
-// func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
-// 	transaction := models.Transaction{
-// 		AccountID: accountID,
-// 		Amount:    amount,
-// 		Type:      transactionType,
-// 	}
-// 	if err := tx.Create(&transaction).Error; err != nil {
-// 		logger.Error.Printf("[repository.CreateTransactionTx] Error recording transaction: %v", err)
-// 		return errs.ErrSomethingWentWrong
-// 	}
-// 	return nil
-// }
-
 // CreateTransactionTx создает запись транзакции для счета в рамках транзакции...
 func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
 	transaction := models.Transaction{
