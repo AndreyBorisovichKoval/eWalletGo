@@ -27,7 +27,7 @@ func handleError(c *gin.Context, err error) {
 	case errors.Is(err, errs.ErrInvalidRequest):
 		c.JSON(http.StatusBadRequest, newErrorResponse(err.Error()))
 	case errors.Is(err, errs.ErrLimitExceeded):
-		c.JSON(http.StatusForbidden, newErrorResponse(err.Error())) // Возвращаем статус 403 для превышения лимита
+		c.JSON(http.StatusForbidden, newErrorResponse(err.Error())) // Код для превышения лимита
 	case errors.Is(err, errs.ErrSomethingWentWrong):
 		logger.Error.Printf("Internal server error: %v", err)
 		c.JSON(http.StatusInternalServerError, newErrorResponse(err.Error()))

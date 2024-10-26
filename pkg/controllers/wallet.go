@@ -30,28 +30,6 @@ func CheckWalletExistence(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "wallet found"})
 }
 
-// RechargeWallet пополняет кошелек и возвращает ответ клиенту...
-func RechargeWallet(c *gin.Context) {
-	var req struct {
-		WalletID string  `json:"wallet_id"`
-		Amount   float64 `json:"amount"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleError(c, errs.ErrInvalidRequest)
-		return
-	}
-
-	err := service.RechargeWallet(req.WalletID, req.Amount)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	logger.Info.Printf("[controllers.RechargeWallet] Wallet recharged successfully: %s, Amount: %.2f", req.WalletID, req.Amount)
-	c.JSON(http.StatusOK, gin.H{"message": "Wallet recharged successfully"})
-}
-
 // GetMonthlyRechargeSummary возвращает количество и сумму пополнений за указанный месяц по `walletID`
 func GetMonthlyRechargeSummary(c *gin.Context) {
 	yearStr := c.Query("year")
@@ -106,4 +84,50 @@ func RecalculateWalletBalance(c *gin.Context) {
 
 	logger.Info.Printf("[controllers.RecalculateWalletBalance] Balance recalculated for wallet: %s, New Balance: %.2f", walletID, newBalance)
 	c.JSON(http.StatusOK, gin.H{"wallet_id": walletID, "new_balance": newBalance})
+}
+
+//
+
+// // RechargeWallet пополняет кошелек и возвращает ответ клиенту...
+// func RechargeWallet(c *gin.Context) {
+// 	var req struct {
+// 		WalletID string  `json:"wallet_id"`
+// 		Amount   float64 `json:"amount"`
+// 	}
+
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		handleError(c, errs.ErrInvalidRequest)
+// 		return
+// 	}
+
+// 	err := service.RechargeWallet(req.WalletID, req.Amount)
+// 	if err != nil {
+// 		handleError(c, err)
+// 		return
+// 	}
+
+// 	logger.Info.Printf("[controllers.RechargeWallet] Wallet recharged successfully: %s, Amount: %.2f", req.WalletID, req.Amount)
+// 	c.JSON(http.StatusOK, gin.H{"message": "Wallet recharged successfully"})
+// }
+
+// RechargeWallet пополняет кошелек и возвращает ответ клиенту...
+func RechargeWallet(c *gin.Context) {
+	var req struct {
+		WalletID string  `json:"wallet_id"`
+		Amount   float64 `json:"amount"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleError(c, errs.ErrInvalidRequest)
+		return
+	}
+
+	err := service.RechargeWallet(req.WalletID, req.Amount)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	logger.Info.Printf("[controllers.RechargeWallet] Wallet recharged successfully: %s, Amount: %.2f", req.WalletID, req.Amount)
+	c.JSON(http.StatusOK, gin.H{"message": "Wallet recharged successfully"})
 }

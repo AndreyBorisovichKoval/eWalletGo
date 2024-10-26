@@ -40,55 +40,6 @@ func CheckWalletExistsTx(walletID string, tx *gorm.DB) (bool, error) {
 	return count > 0, nil
 }
 
-// UpdateWalletBalanceTx обновляет баланс кошелька в рамках транзакции...
-func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
-	var account models.Account
-
-	// Находим счет, связанный с данным walletID
-	err := tx.Table("accounts").
-		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
-		Where("wallets.wallet_number = ?", walletID).
-		Select("accounts.id").
-		First(&account).Error
-	if err != nil {
-		logger.Error.Printf("[repository.UpdateWalletBalanceTx] Error finding account for wallet ID %s: %v", walletID, err)
-		return errs.ErrAccountNotFound
-	}
-
-	// Обновляем баланс счета
-	result := tx.Model(&models.Account{}).
-		Where("id = ?", account.ID).
-		Update("balance", gorm.Expr("balance + ?", amount))
-
-	if result.Error != nil {
-		logger.Error.Printf("[repository.UpdateWalletBalanceTx] Error updating balance for account ID %d: %v", account.ID, result.Error)
-		return errs.ErrSomethingWentWrong
-	}
-
-	// Проверяем, что обновление затронуло строки
-	if result.RowsAffected == 0 {
-		logger.Warning.Printf("[repository.UpdateWalletBalanceTx] No rows affected for account ID: %d", account.ID)
-		return errs.ErrAccountNotFound
-	}
-
-	logger.Info.Printf("[repository.UpdateWalletBalanceTx] Account balance updated successfully for account ID: %d", account.ID)
-	return nil
-}
-
-// CreateTransactionTx создает запись транзакции для счета (account) в рамках транзакции...
-func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
-	transaction := models.Transaction{
-		AccountID: accountID,
-		Amount:    amount,
-		Type:      transactionType,
-	}
-	if err := tx.Create(&transaction).Error; err != nil {
-		logger.Error.Printf("[repository.CreateTransactionTx] Error recording transaction: %v", err)
-		return errs.ErrSomethingWentWrong
-	}
-	return nil
-}
-
 // GetAccountIDByWalletIDTx возвращает AccountID, связанный с данным WalletID в рамках транзакции...
 func GetAccountIDByWalletIDTx(walletID string, tx *gorm.DB) (uint, error) {
 	var wallet models.Wallet
@@ -223,5 +174,88 @@ func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
 	}
 
 	logger.Info.Printf("[repository.UpdateWalletBalanceDirectly] Account balance updated successfully for account ID: %d", account.ID)
+	return nil
+}
+
+//
+
+// GetWalletWithLimit возвращает данные о кошельке и применяет лимит (индивидуальный или по умолчанию) в рамках транзакции...
+func GetWalletWithLimit(walletID string, tx *gorm.DB) (models.WalletWithLimit, error) {
+	var wallet models.WalletWithLimit
+	err := tx.Table("accounts").
+		Select("accounts.balance, accounts.id AS account_id, COALESCE(limit_settings.custom_limit, limit_settings.default_limit) AS max_limit").
+		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
+		Joins("JOIN limit_settings ON limit_settings.client_type = wallets.client_type").
+		Where("wallets.wallet_number = ?", walletID).
+		First(&wallet).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return wallet, errs.ErrWalletNotFound
+	} else if err != nil {
+		logger.Error.Printf("[repository.GetWalletWithLimit] Error retrieving wallet data: %v", err)
+		return wallet, errs.ErrSomethingWentWrong
+	}
+	return wallet, nil
+}
+
+// UpdateWalletBalanceTx обновляет баланс кошелька в рамках транзакции...
+func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
+	var account models.Account
+
+	// Находим счет, связанный с данным walletID
+	err := tx.Table("accounts").
+		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
+		Where("wallets.wallet_number = ?", walletID).
+		Select("accounts.id").
+		First(&account).Error
+	if err != nil {
+		logger.Error.Printf("[repository.UpdateWalletBalanceTx] Error finding account for wallet ID %s: %v", walletID, err)
+		return errs.ErrAccountNotFound
+	}
+
+	// Обновляем баланс счета
+	result := tx.Model(&models.Account{}).
+		Where("id = ?", account.ID).
+		Update("balance", gorm.Expr("balance + ?", amount))
+
+	if result.Error != nil {
+		logger.Error.Printf("[repository.UpdateWalletBalanceTx] Error updating balance for account ID %d: %v", account.ID, result.Error)
+		return errs.ErrSomethingWentWrong
+	}
+
+	// Проверяем, что обновление затронуло строки
+	if result.RowsAffected == 0 {
+		logger.Warning.Printf("[repository.UpdateWalletBalanceTx] No rows affected for account ID: %d", account.ID)
+		return errs.ErrAccountNotFound
+	}
+
+	logger.Info.Printf("[repository.UpdateWalletBalanceTx] Account balance updated successfully for account ID: %d", account.ID)
+	return nil
+}
+
+// // CreateTransactionTx создает запись транзакции для счета (account) в рамках транзакции...
+// func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
+// 	transaction := models.Transaction{
+// 		AccountID: accountID,
+// 		Amount:    amount,
+// 		Type:      transactionType,
+// 	}
+// 	if err := tx.Create(&transaction).Error; err != nil {
+// 		logger.Error.Printf("[repository.CreateTransactionTx] Error recording transaction: %v", err)
+// 		return errs.ErrSomethingWentWrong
+// 	}
+// 	return nil
+// }
+
+// CreateTransactionTx создает запись транзакции для счета в рамках транзакции...
+func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
+	transaction := models.Transaction{
+		AccountID: accountID,
+		Amount:    amount,
+		Type:      transactionType,
+	}
+	if err := tx.Create(&transaction).Error; err != nil {
+		logger.Error.Printf("[repository.CreateTransactionTx] Error recording transaction: %v", err)
+		return errs.ErrSomethingWentWrong
+	}
 	return nil
 }

@@ -22,60 +22,6 @@ func CheckWalletExistence(walletID string) (bool, error) {
 	return exists, nil
 }
 
-// RechargeWallet пополняет баланс кошелька и добавляет запись транзакции в рамках одной транзакции базы данных...
-func RechargeWallet(walletID string, amount float64) error {
-	// Начинаем транзакцию
-	tx := db.GetDBConn().Begin()
-	if tx.Error != nil {
-		logger.Error.Println("[service.RechargeWallet] Ошибка начала транзакции:", tx.Error)
-		return errs.ErrSomethingWentWrong
-	}
-
-	// Проверяем существование кошелька
-	exists, err := repository.CheckWalletExistsTx(walletID, tx)
-	if err != nil {
-		tx.Rollback()
-		logger.Error.Printf("[service.RechargeWallet] Ошибка проверки кошелька с ID %s: %v", walletID, err)
-		return err
-	}
-	if !exists {
-		tx.Rollback()
-		logger.Warning.Printf("[service.RechargeWallet] Кошелек не найден: %s", walletID)
-		return errs.ErrWalletNotFound
-	}
-
-	// Получаем AccountID
-	accountID, err := repository.GetAccountIDByWalletIDTx(walletID, tx)
-	if err != nil {
-		tx.Rollback()
-		logger.Error.Printf("[service.RechargeWallet] Ошибка получения AccountID для кошелька с ID %s: %v", walletID, err)
-		return errs.ErrAccountNotFound
-	}
-
-	// Обновляем баланс кошелька
-	if err := repository.UpdateWalletBalanceTx(walletID, amount, tx); err != nil {
-		tx.Rollback()
-		logger.Error.Printf("[service.RechargeWallet] Ошибка обновления баланса кошелька с ID %s: %v", walletID, err)
-		return err
-	}
-
-	// Добавляем запись транзакции
-	if err := repository.CreateTransactionTx(accountID, amount, "recharge", tx); err != nil {
-		tx.Rollback()
-		logger.Error.Printf("[service.RechargeWallet] Ошибка добавления транзакции для AccountID %d: %v", accountID, err)
-		return err
-	}
-
-	// Завершаем транзакцию
-	if err := tx.Commit().Error; err != nil {
-		logger.Error.Println("[service.RechargeWallet] Ошибка при выполнении коммита транзакции:", err)
-		return errs.ErrSomethingWentWrong
-	}
-
-	logger.Info.Printf("[service.RechargeWallet] Пополнение кошелька успешно завершено: %s, Сумма: %.2f", walletID, amount)
-	return nil
-}
-
 // GetMonthlyRechargeSummary возвращает суммарные данные по кошельку для указанного месяца и года
 func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, float64, error) {
 	totalCount, totalAmount, err := repository.GetMonthlyRechargeSummary(walletID, year, month)
@@ -126,4 +72,106 @@ func RecalculateWalletBalance(walletID string) (float64, error) {
 	}
 
 	return newBalance, nil
+}
+
+//
+
+// // RechargeWallet пополняет баланс кошелька и добавляет запись транзакции в рамках одной транзакции базы данных...
+// func RechargeWallet(walletID string, amount float64) error {
+// 	// Начинаем транзакцию
+// 	tx := db.GetDBConn().Begin()
+// 	if tx.Error != nil {
+// 		logger.Error.Println("[service.RechargeWallet] Ошибка начала транзакции:", tx.Error)
+// 		return errs.ErrSomethingWentWrong
+// 	}
+
+// 	// Проверяем существование кошелька
+// 	exists, err := repository.CheckWalletExistsTx(walletID, tx)
+// 	if err != nil {
+// 		tx.Rollback()
+// 		logger.Error.Printf("[service.RechargeWallet] Ошибка проверки кошелька с ID %s: %v", walletID, err)
+// 		return err
+// 	}
+// 	if !exists {
+// 		tx.Rollback()
+// 		logger.Warning.Printf("[service.RechargeWallet] Кошелек не найден: %s", walletID)
+// 		return errs.ErrWalletNotFound
+// 	}
+
+// 	// Получаем AccountID
+// 	accountID, err := repository.GetAccountIDByWalletIDTx(walletID, tx)
+// 	if err != nil {
+// 		tx.Rollback()
+// 		logger.Error.Printf("[service.RechargeWallet] Ошибка получения AccountID для кошелька с ID %s: %v", walletID, err)
+// 		return errs.ErrAccountNotFound
+// 	}
+
+// 	// Обновляем баланс кошелька
+// 	if err := repository.UpdateWalletBalanceTx(walletID, amount, tx); err != nil {
+// 		tx.Rollback()
+// 		logger.Error.Printf("[service.RechargeWallet] Ошибка обновления баланса кошелька с ID %s: %v", walletID, err)
+// 		return err
+// 	}
+
+// 	// Добавляем запись транзакции
+// 	if err := repository.CreateTransactionTx(accountID, amount, "recharge", tx); err != nil {
+// 		tx.Rollback()
+// 		logger.Error.Printf("[service.RechargeWallet] Ошибка добавления транзакции для AccountID %d: %v", accountID, err)
+// 		return err
+// 	}
+
+// 	// Завершаем транзакцию
+// 	if err := tx.Commit().Error; err != nil {
+// 		logger.Error.Println("[service.RechargeWallet] Ошибка при выполнении коммита транзакции:", err)
+// 		return errs.ErrSomethingWentWrong
+// 	}
+
+// 	logger.Info.Printf("[service.RechargeWallet] Пополнение кошелька успешно завершено: %s, Сумма: %.2f", walletID, amount)
+// 	return nil
+// }
+
+// RechargeWallet пополняет баланс кошелька и проверяет лимиты
+func RechargeWallet(walletID string, amount float64) error {
+	tx := db.GetDBConn().Begin()
+	if tx.Error != nil {
+		logger.Error.Println("[service.RechargeWallet] Ошибка начала транзакции:", tx.Error)
+		return errs.ErrSomethingWentWrong
+	}
+
+	// Проверка существования кошелька и получение лимита
+	walletWithLimit, err := repository.GetWalletWithLimit(walletID, tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Проверка, превышает ли новое пополнение лимит
+	newBalance := walletWithLimit.Balance + amount
+	if newBalance > walletWithLimit.MaxLimit {
+		tx.Rollback()
+		return errs.ErrLimitExceeded // Ошибка, если новый баланс превышает лимит
+	}
+
+	// Обновляем баланс
+	err = repository.UpdateWalletBalanceTx(walletID, amount, tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Добавляем запись транзакции
+	err = repository.CreateTransactionTx(walletWithLimit.AccountID, amount, "recharge", tx)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Завершаем транзакцию
+	if err := tx.Commit().Error; err != nil {
+		logger.Error.Println("[service.RechargeWallet] Ошибка при выполнении коммита транзакции:", err)
+		return errs.ErrSomethingWentWrong
+	}
+
+	logger.Info.Printf("[service.RechargeWallet] Кошелек пополнен: %s, Сумма: %.2f", walletID, amount)
+	return nil
 }

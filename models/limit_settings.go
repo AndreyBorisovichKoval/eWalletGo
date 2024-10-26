@@ -19,3 +19,10 @@ type LimitSettings struct {
 func (LimitSettings) TableName() string {
 	return "limit_settings"
 }
+
+// WalletWithLimit включает данные о кошельке и лимите...
+type WalletWithLimit struct {
+	Balance   float64 `json:"balance"`    // Баланс кошелька
+	AccountID uint    `json:"account_id"` // Идентификатор аккаунта
+	MaxLimit  float64 `json:"max_limit"`  // Применяемый лимит
+}
