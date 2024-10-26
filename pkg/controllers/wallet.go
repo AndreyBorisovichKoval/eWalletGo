@@ -94,3 +94,16 @@ func GetWalletBalance(c *gin.Context) {
 	logger.Info.Printf("[controllers.GetWalletBalance] Balance retrieved for wallet: %s", walletID)
 	c.JSON(http.StatusOK, gin.H{"balance": balance})
 }
+
+// RecalculateWalletBalance пересчитывает баланс кошелька на основе транзакций...
+func RecalculateWalletBalance(c *gin.Context) {
+	walletID := c.Param("wallet_id")
+	newBalance, err := service.RecalculateWalletBalance(walletID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	logger.Info.Printf("[controllers.RecalculateWalletBalance] Balance recalculated for wallet: %s, New Balance: %.2f", walletID, newBalance)
+	c.JSON(http.StatusOK, gin.H{"wallet_id": walletID, "new_balance": newBalance})
+}

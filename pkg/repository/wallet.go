@@ -169,3 +169,59 @@ func GetWalletBalance(walletID string) (float64, error) {
 	}
 	return account.Balance, nil
 }
+
+// CalculateBalanceFromTransactions вычисляет новый баланс на основе всех транзакций...
+func CalculateBalanceFromTransactions(walletID string) (float64, error) {
+	var newBalance float64
+
+	// Суммируем все транзакции по данному кошельку
+	err := db.GetDBConn().
+		Table("transactions").
+		Joins("JOIN accounts ON transactions.account_id = accounts.id").
+		Joins("JOIN wallets ON accounts.wallet_id = wallets.id").
+		Where("wallets.wallet_number = ?", walletID).
+		Select("COALESCE(SUM(transactions.amount), 0)").Scan(&newBalance).Error
+
+	if err != nil {
+		logger.Error.Printf("[repository.CalculateBalanceFromTransactions] Error calculating balance for wallet ID %s: %v", walletID, err)
+		return 0, errs.ErrSomethingWentWrong
+	}
+
+	return newBalance, nil
+}
+
+// UpdateWalletBalanceDirectly обновляет баланс кошелька напрямую...
+func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
+	var account models.Account
+
+	// Находим счет, связанный с данным walletID
+	err := db.GetDBConn().Table("accounts").
+		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
+		Where("wallets.wallet_number = ?", walletID).
+		Select("accounts.id").
+		First(&account).Error
+
+	if err != nil {
+		logger.Error.Printf("[repository.UpdateWalletBalanceDirectly] Error finding account for wallet ID %s: %v", walletID, err)
+		return errs.ErrAccountNotFound
+	}
+
+	// Обновляем баланс счета
+	result := db.GetDBConn().Model(&models.Account{}).
+		Where("id = ?", account.ID).
+		Update("balance", newBalance)
+
+	if result.Error != nil {
+		logger.Error.Printf("[repository.UpdateWalletBalanceDirectly] Error updating balance for account ID %d: %v", account.ID, result.Error)
+		return errs.ErrSomethingWentWrong
+	}
+
+	// Проверка, что обновление затронуло строки
+	if result.RowsAffected == 0 {
+		logger.Warning.Printf("[repository.UpdateWalletBalanceDirectly] No rows affected for account ID: %d", account.ID)
+		return errs.ErrAccountNotFound
+	}
+
+	logger.Info.Printf("[repository.UpdateWalletBalanceDirectly] Account balance updated successfully for account ID: %d", account.ID)
+	return nil
+}

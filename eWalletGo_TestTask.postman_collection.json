@@ -200,6 +200,36 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "RecalculateBalance",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:57320/wallet/recalculate-balance/1234567890123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "57320",
+							"path": [
+								"wallet",
+								"recalculate-balance",
+								"1234567890123456"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

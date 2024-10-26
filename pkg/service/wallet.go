@@ -99,3 +99,31 @@ func GetWalletBalance(walletID string) (float64, error) {
 	}
 	return balance, nil
 }
+
+// RecalculateWalletBalance пересчитывает баланс кошелька на основе всех транзакций...
+func RecalculateWalletBalance(walletID string) (float64, error) {
+	// Проверяем существование кошелька
+	exists, err := repository.CheckWalletExists(walletID)
+	if err != nil {
+		return 0, err
+	}
+	if !exists {
+		logger.Warning.Printf("[service.RecalculateWalletBalance] Wallet not found: %s", walletID)
+		return 0, errs.ErrWalletNotFound
+	}
+
+	// Получаем пересчитанный баланс на основе транзакций
+	newBalance, err := repository.CalculateBalanceFromTransactions(walletID)
+	if err != nil {
+		logger.Error.Printf("[service.RecalculateWalletBalance] Error recalculating balance for wallet ID %s: %v", walletID, err)
+		return 0, err
+	}
+
+	// Обновляем баланс в аккаунте
+	if err := repository.UpdateWalletBalanceDirectly(walletID, newBalance); err != nil {
+		logger.Error.Printf("[service.RecalculateWalletBalance] Error updating wallet balance for wallet ID %s: %v", walletID, err)
+		return 0, err
+	}
+
+	return newBalance, nil
+}
