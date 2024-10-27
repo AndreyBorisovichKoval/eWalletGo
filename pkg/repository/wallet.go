@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// CheckWalletExists проверяет, существует ли кошелек с данным ID...
+// CheckWalletExists checks if a wallet with the given ID exists...
 func CheckWalletExists(walletID string) (bool, error) {
 	var count int64
 	err := db.GetDBConn().Model(&models.Wallet{}).Where("wallet_number = ?", walletID).Count(&count).Error
@@ -26,7 +26,7 @@ func CheckWalletExists(walletID string) (bool, error) {
 	return count > 0, nil
 }
 
-// CheckWalletExistsTx проверяет, существует ли кошелек с данным ID в рамках транзакции...
+// CheckWalletExistsTx checks if a wallet with the given ID exists within a transaction...
 func CheckWalletExistsTx(walletID string, tx *gorm.DB) (bool, error) {
 	var count int64
 	err := tx.Model(&models.Wallet{}).Where("wallet_number = ?", walletID).Count(&count).Error
@@ -40,7 +40,7 @@ func CheckWalletExistsTx(walletID string, tx *gorm.DB) (bool, error) {
 	return count > 0, nil
 }
 
-// GetAccountIDByWalletIDTx возвращает AccountID, связанный с данным WalletID в рамках транзакции...
+// GetAccountIDByWalletIDTx returns the AccountID associated with the given WalletID within a transaction...
 func GetAccountIDByWalletIDTx(walletID string, tx *gorm.DB) (uint, error) {
 	var wallet models.Wallet
 	err := tx.Select("id").Where("wallet_number = ?", walletID).First(&wallet).Error
@@ -66,9 +66,9 @@ func GetAccountIDByWalletIDTx(walletID string, tx *gorm.DB) (uint, error) {
 	return account.ID, nil
 }
 
-// GetMonthlyRechargeSummary возвращает суммарные данные по `walletID` для указанного месяца и года
+// GetMonthlyRechargeSummary returns summary data for `walletID` for the specified month and year
 func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, float64, error) {
-	// Проверяем существование кошелька
+	// Check if wallet exists
 	var walletCount int64
 	err := db.GetDBConn().
 		Model(&models.Wallet{}).
@@ -82,7 +82,7 @@ func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, flo
 	var totalCount int64
 	var totalAmount float64
 
-	// Запрос для суммирования пополнений за указанный месяц и год
+	// Query for summing recharges for the specified month and year
 	err = db.GetDBConn().
 		Model(&models.Transaction{}).
 		Joins("JOIN accounts ON transactions.account_id = accounts.id").
@@ -92,14 +92,14 @@ func GetMonthlyRechargeSummary(walletID string, year int, month int) (int64, flo
 		Select("COALESCE(SUM(transactions.amount), 0)").Row().Scan(&totalAmount)
 
 	if err != nil {
-		logger.Error.Printf("[repository.GetMonthlyRechargeSummary] Ошибка получения данных: %v", err)
+		logger.Error.Printf("[repository.GetMonthlyRechargeSummary] Error retrieving data: %v", err)
 		return 0, 0, errs.ErrSomethingWentWrong
 	}
 
 	return totalCount, totalAmount, nil
 }
 
-// GetWalletBalance возвращает текущий баланс кошелька по его ID...
+// GetWalletBalance returns the current balance of the wallet by its ID...
 func GetWalletBalance(walletID string) (float64, error) {
 	var account models.Account
 	err := db.GetDBConn().Table("accounts").
@@ -108,7 +108,7 @@ func GetWalletBalance(walletID string) (float64, error) {
 		Select("accounts.balance").
 		First(&account).Error
 
-	// Применяем translateError для конвертации ошибки
+	// Apply translateError to convert the error
 	if err != nil {
 		err = translateError(err)
 		if errors.Is(err, errs.ErrRecordNotFound) {
@@ -121,11 +121,11 @@ func GetWalletBalance(walletID string) (float64, error) {
 	return account.Balance, nil
 }
 
-// CalculateBalanceFromTransactions вычисляет новый баланс на основе всех транзакций...
+// CalculateBalanceFromTransactions calculates the new balance based on all transactions...
 func CalculateBalanceFromTransactions(walletID string) (float64, error) {
 	var newBalance float64
 
-	// Суммируем все транзакции по данному кошельку
+	// Sum all transactions for the given wallet
 	err := db.GetDBConn().
 		Table("transactions").
 		Joins("JOIN accounts ON transactions.account_id = accounts.id").
@@ -141,11 +141,11 @@ func CalculateBalanceFromTransactions(walletID string) (float64, error) {
 	return newBalance, nil
 }
 
-// UpdateWalletBalanceDirectly обновляет баланс кошелька напрямую...
+// UpdateWalletBalanceDirectly updates the wallet balance directly...
 func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
 	var account models.Account
 
-	// Находим счет, связанный с данным walletID
+	// Find the account associated with the given walletID
 	err := db.GetDBConn().Table("accounts").
 		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
 		Where("wallets.wallet_number = ?", walletID).
@@ -157,7 +157,7 @@ func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
 		return errs.ErrAccountNotFound
 	}
 
-	// Обновляем баланс счета
+	// Update account balance
 	result := db.GetDBConn().Model(&models.Account{}).
 		Where("id = ?", account.ID).
 		Update("balance", newBalance)
@@ -167,7 +167,7 @@ func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
 		return errs.ErrSomethingWentWrong
 	}
 
-	// Проверка, что обновление затронуло строки
+	// Check if any rows were affected by the update
 	if result.RowsAffected == 0 {
 		logger.Warning.Printf("[repository.UpdateWalletBalanceDirectly] No rows affected for account ID: %d", account.ID)
 		return errs.ErrAccountNotFound
@@ -177,9 +177,7 @@ func UpdateWalletBalanceDirectly(walletID string, newBalance float64) error {
 	return nil
 }
 
-//
-
-// GetWalletWithLimit возвращает данные о кошельке и применяет лимит (индивидуальный или по умолчанию) в рамках транзакции...
+// GetWalletWithLimit returns wallet data and applies the limit (custom or default) within a transaction...
 func GetWalletWithLimit(walletID string, tx *gorm.DB) (models.WalletWithLimit, error) {
 	var wallet models.WalletWithLimit
 	err := tx.Table("accounts").
@@ -197,11 +195,11 @@ func GetWalletWithLimit(walletID string, tx *gorm.DB) (models.WalletWithLimit, e
 	return wallet, nil
 }
 
-// UpdateWalletBalanceTx обновляет баланс кошелька в рамках транзакции...
+// UpdateWalletBalanceTx updates the wallet balance within a transaction...
 func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
 	var account models.Account
 
-	// Находим счет, связанный с данным walletID
+	// Find the account associated with the given walletID
 	err := tx.Table("accounts").
 		Joins("JOIN wallets ON wallets.id = accounts.wallet_id").
 		Where("wallets.wallet_number = ?", walletID).
@@ -212,7 +210,7 @@ func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
 		return errs.ErrAccountNotFound
 	}
 
-	// Обновляем баланс счета
+	// Update account balance
 	result := tx.Model(&models.Account{}).
 		Where("id = ?", account.ID).
 		Update("balance", gorm.Expr("balance + ?", amount))
@@ -222,7 +220,7 @@ func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
 		return errs.ErrSomethingWentWrong
 	}
 
-	// Проверяем, что обновление затронуло строки
+	// Check if any rows were affected by the update
 	if result.RowsAffected == 0 {
 		logger.Warning.Printf("[repository.UpdateWalletBalanceTx] No rows affected for account ID: %d", account.ID)
 		return errs.ErrAccountNotFound
@@ -232,7 +230,7 @@ func UpdateWalletBalanceTx(walletID string, amount float64, tx *gorm.DB) error {
 	return nil
 }
 
-// CreateTransactionTx создает запись транзакции для счета в рамках транзакции...
+// CreateTransactionTx creates a transaction record for an account within a transaction...
 func CreateTransactionTx(accountID uint, amount float64, transactionType string, tx *gorm.DB) error {
 	transaction := models.Transaction{
 		AccountID: accountID,

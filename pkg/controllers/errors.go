@@ -11,9 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// handleError обрабатывает ошибки и возвращает соответствующий ответ клиенту...
+// handleError handles errors and returns an appropriate response to the client...
 func handleError(c *gin.Context, err error) {
-	logger.Error.Printf("Error occurred: %v", err) // Логирование всех ошибок для диагностики
+	logger.Error.Printf("Error occurred: %v", err) // Logging all errors for diagnostics
 
 	switch {
 	case errors.Is(err, errs.ErrWalletNotFound):
@@ -27,7 +27,7 @@ func handleError(c *gin.Context, err error) {
 	case errors.Is(err, errs.ErrInvalidRequest):
 		c.JSON(http.StatusBadRequest, newErrorResponse(err.Error()))
 	case errors.Is(err, errs.ErrLimitExceeded):
-		c.JSON(http.StatusForbidden, newErrorResponse(err.Error())) // Код для превышения лимита
+		c.JSON(http.StatusForbidden, newErrorResponse(err.Error())) // Code for limit exceeded
 	case errors.Is(err, errs.ErrSomethingWentWrong):
 		logger.Error.Printf("Internal server error: %v", err)
 		c.JSON(http.StatusInternalServerError, newErrorResponse(err.Error()))
@@ -37,7 +37,7 @@ func handleError(c *gin.Context, err error) {
 	}
 }
 
-// ErrorResponse представляет структуру для обработки ошибок...
+// ErrorResponse represents the structure for handling errors...
 type ErrorResponse struct {
 	Error string `json:"error"`
 }

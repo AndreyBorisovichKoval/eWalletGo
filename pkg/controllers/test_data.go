@@ -10,21 +10,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// InsertTestData вызывает сервис для вставки тестовых данных в базу данных
+// InsertTestData calls the service to insert test data into the database
 func InsertTestData(c *gin.Context) {
 	err := service.InsertTestData()
 	if err != nil {
-		// Проверяем, если ошибка указывает на уже существующие данные
-		if err.Error() == "тестовые данные уже добавлены" {
-			c.JSON(http.StatusConflict, gin.H{"error": "Тестовые Данные ранее уже Были добавлены"})
+		// Check if the error indicates that data already exists
+		if err.Error() == "test data already added" {
+			c.JSON(http.StatusConflict, gin.H{"error": "Test data has already been added"})
 			return
 		}
-		// Логируем и отправляем общее сообщение об ошибке
-		logger.Error.Printf("[InsertTestData] Ошибка при вставке тестовых данных: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось вставить тестовые данные"})
+		// Log and send a generic error message
+		logger.Error.Printf("[InsertTestData] Error inserting test data: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert test data"})
 		return
 	}
 
-	logger.Info.Println("[InsertTestData] Тестовые данные успешно добавлены")
-	c.JSON(http.StatusOK, gin.H{"message": "Тестовые данные успешно добавлены"})
+	logger.Info.Println("[InsertTestData] Test data successfully added")
+	c.JSON(http.StatusOK, gin.H{"message": "Test data successfully added"})
 }

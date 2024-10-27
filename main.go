@@ -18,7 +18,7 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	// Очищаем консоль от старых сообщений...
+	// Clear the console from old messages...
 	utils.ClearConsole()
 
 	app.RunApp()

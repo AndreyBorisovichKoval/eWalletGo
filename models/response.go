@@ -2,9 +2,9 @@
 
 package models
 
-// Response структура для стандартного ответа API
+// Response structure for a standard API response
 type Response struct {
-	Status  string      `json:"status"`         // Статус ответа: "success" или "error"
-	Message string      `json:"message"`        // Описание результата выполнения
-	Data    interface{} `json:"data,omitempty"` // Данные, возвращаемые API (если есть)
+	Status  string      `json:"status"`         // Response status: "success" or "error"
+	Message string      `json:"message"`        // Description of the result
+	Data    interface{} `json:"data,omitempty"` // Data returned by the API (if any)
 }

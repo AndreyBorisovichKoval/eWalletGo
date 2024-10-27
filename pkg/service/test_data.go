@@ -3,37 +3,37 @@
 package service
 
 import (
-	"eWalletGo_TestTask/logger" // добавляем логгер
+	"eWalletGo_TestTask/logger" // add logger
 	"eWalletGo_TestTask/pkg/repository"
 	"errors"
 	"fmt"
 )
 
-// InsertTestData загружает тестовые данные из SQL файла и проверяет их наличие перед добавлением
+// InsertTestData loads test data from an SQL file and checks for existing data before adding
 func InsertTestData() error {
-	// Проверяем, существуют ли уже данные в таблице "users" (выберите таблицу, которая всегда заполняется тестовыми данными)
+	// Check if data already exists in the "users" table (choose a table that is always populated with test data)
 	exists, err := repository.CheckTestDataExists("users")
 	if err != nil {
-		logger.Error.Printf("Ошибка проверки существования данных: %v", err) // добавляем логирование ошибки
-		return fmt.Errorf("ошибка проверки существования данных: %v", err)
+		logger.Error.Printf("Error checking data existence: %v", err) // add error logging
+		return fmt.Errorf("error checking data existence: %v", err)
 	}
 	if exists {
-		return errors.New("тестовые данные уже добавлены")
+		return errors.New("test data already added")
 	}
 
-	// Загружаем тестовые данные из файла
+	// Load test data from file
 	filePath := "C:/GoProject/src/eWalletGo_TestTask/db/insert_test_data.sql"
 	sqlData, err := repository.LoadSQLFile(filePath)
 	if err != nil {
-		logger.Error.Printf("Ошибка загрузки SQL файла: %v", err) // добавляем логирование ошибки
-		return fmt.Errorf("ошибка загрузки SQL файла: %v", err)
+		logger.Error.Printf("Error loading SQL file: %v", err) // add error logging
+		return fmt.Errorf("error loading SQL file: %v", err)
 	}
 
-	// Выполняем SQL-запрос
+	// Execute SQL query
 	err = repository.ExecSQLQuery(sqlData)
 	if err != nil {
-		logger.Error.Printf("Ошибка выполнения SQL запроса: %v", err) // добавляем логирование ошибки
-		return fmt.Errorf("ошибка выполнения SQL запроса: %v", err)
+		logger.Error.Printf("Error executing SQL query: %v", err) // add error logging
+		return fmt.Errorf("error executing SQL query: %v", err)
 	}
 
 	return nil

@@ -14,39 +14,39 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// PingPong обрабатывает запрос ping и отвечает сообщением pong
+// PingPong handles the ping request and responds with a pong message
 func PingPong(c *gin.Context) {
-	logger.Info.Printf("Маршрут '%s' вызван методом '%s'", c.FullPath(), c.Request.Method)
+	logger.Info.Printf("Route '%s' called with method '%s'", c.FullPath(), c.Request.Method)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
 	})
 }
 
-// InitRoutes инициализирует все маршруты с необходимыми middleware и Swagger
+// InitRoutes initializes all routes with necessary middleware and Swagger
 func InitRoutes() *gin.Engine {
 	router := gin.Default()
 
-	// Устанавливаем режим работы Gin из конфигурации
+	// Set Gin mode from configuration
 	gin.SetMode(configs.AppSettings.AppParams.GinMode)
 
-	// Маршрут для документации Swagger
+	// Route for Swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Маршрут для проверки состояния сервера
+	// Route to check server status
 	router.GET("/ping", PingPong)
 
-	// Группа маршрутов для управления кошельком
+	// Wallet management route group
 	// walletG := router.Group("/wallet", middleware.AuthMiddleware)
 	walletG := router.Group("/wallet")
 	{
-		walletG.GET("/check/:wallet_id", CheckWalletExistence)                     // Проверка существования кошелька...
-		walletG.POST("/recharge", RechargeWallet)                                  // Пополнение кошелька...
-		walletG.GET("/monthly-summary", GetMonthlyRechargeSummary)                 // Суммарные данные пополнений за текущий месяц, либо за указанный период (нужны/необходимы qwery-параметры года и месяца)...
-		walletG.GET("/balance/:wallet_id", GetWalletBalance)                       // Получение текущего баланса кошелька...
-		walletG.PATCH("/recalculate-balance/:wallet_id", RecalculateWalletBalance) // Перерасчёт баланса на основе транзакций...
+		walletG.GET("/check/:wallet_id", CheckWalletExistence)                     // Check wallet existence...
+		walletG.POST("/recharge", RechargeWallet)                                  // Recharge wallet...
+		walletG.GET("/monthly-summary", GetMonthlyRechargeSummary)                 // Monthly recharge summary for the current month or specified period (requires query parameters for year and month)...
+		walletG.GET("/balance/:wallet_id", GetWalletBalance)                       // Get current wallet balance...
+		walletG.PATCH("/recalculate-balance/:wallet_id", RecalculateWalletBalance) // Recalculate balance based on transactions...
 	}
 
-	// Маршрут для вставки тестовых данных
+	// Route for inserting test data
 	router.POST("/insert-test-data", InsertTestData)
 
 	return router

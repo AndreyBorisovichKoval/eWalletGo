@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CheckWalletExistence проверяет существование кошелька
+// CheckWalletExistence checks if the wallet exists
 // @Summary Check wallet existence
 // @Tags wallets
 // @Description Checks if the wallet exists based on wallet ID
@@ -39,7 +39,7 @@ func CheckWalletExistence(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "wallet found"})
 }
 
-// GetMonthlyRechargeSummary возвращает сумму и количество пополнений за указанный месяц
+// GetMonthlyRechargeSummary returns the total and count of recharges for a specified month
 // @Summary Get monthly recharge summary
 // @Tags wallets
 // @Description Retrieves the total amount and count of recharge operations for a wallet in a specified month
@@ -81,7 +81,7 @@ func GetMonthlyRechargeSummary(c *gin.Context) {
 	})
 }
 
-// GetWalletBalance возвращает баланс кошелька
+// GetWalletBalance retrieves the balance of a wallet
 // @Summary Get wallet balance
 // @Tags wallets
 // @Description Retrieves the current balance of a specified wallet
@@ -103,7 +103,7 @@ func GetWalletBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"balance": balance})
 }
 
-// RecalculateWalletBalance пересчитывает баланс кошелька на основе транзакций
+// RecalculateWalletBalance recalculates the wallet balance based on transactions
 // @Summary Recalculate wallet balance
 // @Tags wallets
 // @Description Recalculates the wallet balance based on transaction records
@@ -125,7 +125,7 @@ func RecalculateWalletBalance(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"wallet_id": walletID, "new_balance": newBalance})
 }
 
-// RechargeWallet пополняет кошелек
+// RechargeWallet recharges the wallet
 // @Summary Recharge wallet
 // @Tags wallets
 // @Description Adds a specified amount to the wallet balance
