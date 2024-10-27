@@ -1,3 +1,5 @@
+// C:\GoProject\src\eWalletGo_TestTask\models\response.go
+
 package models
 
 // Response структура для стандартного ответа API
