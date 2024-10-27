@@ -5,7 +5,6 @@ package controllers
 import (
 	"eWalletGo_TestTask/configs"
 	"eWalletGo_TestTask/logger"
-	"eWalletGo_TestTask/pkg/middleware"
 
 	_ "eWalletGo_TestTask/docs"
 	"net/http"
@@ -37,8 +36,8 @@ func InitRoutes() *gin.Engine {
 	router.GET("/ping", PingPong)
 
 	// Группа маршрутов для управления кошельком
-	walletG := router.Group("/wallet", middleware.AuthMiddleware)
-	// walletG := router.Group("/wallet")
+	// walletG := router.Group("/wallet", middleware.AuthMiddleware)
+	walletG := router.Group("/wallet")
 	{
 		walletG.GET("/check/:wallet_id", CheckWalletExistence)                     // Проверка существования кошелька...
 		walletG.POST("/recharge", RechargeWallet)                                  // Пополнение кошелька...
