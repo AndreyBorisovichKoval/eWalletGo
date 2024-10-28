@@ -16,10 +16,10 @@ import (
 const (
 	userIDHeader = "X-UserId"
 	digestHeader = "X-Digest"
-	secretKey    = "Fred_secret_key" // Установите уникальный секретный ключ
+	secretKey    = "Fred_secret_key" // Set a unique secret key
 )
 
-// validateHMAC проверяет, совпадает ли полученный HMAC с ожидаемым.
+// validateHMAC checks if the received HMAC matches the expected one.
 func validateHMAC(body, digest string) bool {
 	h := hmac.New(sha1.New, []byte(secretKey))
 	h.Write([]byte(body))
@@ -27,7 +27,7 @@ func validateHMAC(body, digest string) bool {
 	return hmac.Equal([]byte(expectedMAC), []byte(digest))
 }
 
-// AuthMiddleware проверяет наличие и корректность заголовков X-UserId и X-Digest.
+// AuthMiddleware checks for the presence and validity of X-UserId and X-Digest headers.
 func AuthMiddleware(c *gin.Context) {
 	userID := c.GetHeader(userIDHeader)
 	digest := c.GetHeader(digestHeader)
@@ -38,16 +38,16 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 
-	// Читаем тело запроса и восстанавливаем его для дальнейшей обработки
+	// Read the request body and restore it for further processing
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
 		c.Abort()
 		return
 	}
-	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body)) // Восстанавливаем тело запроса
+	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body)) // Restore request body
 
-	// Проверка HMAC
+	// Validate HMAC
 	if !validateHMAC(string(body), digest) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid digest"})
 		c.Abort()
