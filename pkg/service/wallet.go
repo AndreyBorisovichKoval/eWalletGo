@@ -91,7 +91,8 @@ func RechargeWallet(walletID string, amount float64) error {
 
 	// Check if the new balance exceeds the limit
 	newBalance := walletWithLimit.Balance + amount
-	if newBalance > walletWithLimit.MaxLimit {
+	// if newBalance > walletWithLimit.MaxLimit {
+	if newBalance > walletWithLimit.MaxLimit || newBalance < 0 {
 		tx.Rollback()
 		return errs.ErrLimitExceeded // Error if new balance exceeds the limit
 	}
