@@ -1,6 +1,6 @@
-// C:\GoProject\src\eWalletGo_TestTask\pkg\middleware\auth.go
+// C:\GoProject\src\eWalletGo_TestTask\pkg\controllers\middleware.go
 
-package middleware
+package controllers
 
 import (
 	"bytes"

@@ -5,8 +5,6 @@ package controllers
 import (
 	"eWalletGo_TestTask/configs"
 	"eWalletGo_TestTask/logger"
-
-	_ "eWalletGo_TestTask/docs"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,8 +34,8 @@ func InitRoutes() *gin.Engine {
 	router.GET("/ping", PingPong)
 
 	// Wallet management route group
-	// walletG := router.Group("/wallet", middleware.AuthMiddleware)
-	walletG := router.Group("/wallet")
+	walletG := router.Group("/wallet", AuthMiddleware)
+
 	{
 		walletG.GET("/check/:wallet_id", CheckWalletExistence)                     // Check wallet existence...
 		walletG.POST("/recharge", RechargeWallet)                                  // Recharge wallet...
